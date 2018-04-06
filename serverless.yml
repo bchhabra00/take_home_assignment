@@ -1,0 +1,99 @@
+service: s3-dynamodb
+
+frameworkVersion: ">=1.1.0"
+
+custom:
+  bucket: bharatchhabra.net
+
+provider:
+  name: aws
+  runtime: nodejs4.3
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+         - s3:*
+         - dynamodb:DescriptionTable
+         - dynamodb:PutItem
+         - dynamodb:DescribeTable
+         - dynamodb:Query
+         - dynamodb:Scan
+         - dynamodb:GetItem
+         - dynamodb:PutItem
+         - dynamodb:UpdateItem
+         - dynamodb:DeleteItem
+      Resource: "*"
+
+functions:
+  created:
+    handler: handler.created
+    events:
+      - s3:
+          bucket: ${self:custom.bucket}
+          event: s3:ObjectCreated:*
+
+  list:
+    handler: handler.list
+    events:
+      - http:
+          path: songs
+          method: get
+          cors: true
+
+  playlist:
+    handler: handler.playlist
+    events:
+      - http:
+          path: songs
+          method: post
+          cors: true
+
+  get:
+    handler: handler.get
+    events:
+      - http:
+          path: songs/{name}
+          method: get
+          cors: true
+
+ 
+resources:
+  Resources:
+    S3RecorDynamoDbTable:
+       Type: 'AWS::DynamoDB::Table'
+       DeletionPolicy: Retain
+       Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: fileName
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: fileName
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        TableName: 'takehometable'
+
+    DynamoDbTable:
+       Type: 'AWS::DynamoDB::Table'
+       DeletionPolicy: Retain
+       Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: fileName
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: fileName
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        TableName: 'playlisttable'
+
+   
+
+     
+      
+    
